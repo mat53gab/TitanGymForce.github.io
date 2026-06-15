@@ -180,28 +180,6 @@ function logout() {
     });
 }
 
-/**
- * Sugerencia: Al conectar con Supabase, esta función usará 
- * await supabase.auth.signInWithPassword()
- */
-async function verifyPin() {
-    const pin = document.getElementById('loginPin').value;
-    // Simulamos una verificación que luego será contra la DB
-    if (pin && pin.length >= 4) { 
-        document.getElementById('login').classList.add('hidden');
-        document.getElementById('app').classList.remove('hidden');
-        await refreshData();
-        generarCalendario();
-    } else {
-        alert('❌ Error de acceso');
-    }
-}
-
-function cancelPin() {
-    document.getElementById('pinEntry').classList.add('hidden');
-    document.getElementById('loginOptions').classList.remove('hidden');
-}
-
 function showView(view){ 
     document.querySelectorAll('.view').forEach(v=>v.classList.add('hidden')); 
     const target = document.getElementById(view);

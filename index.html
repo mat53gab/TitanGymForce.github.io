@@ -14,7 +14,7 @@
 </head>
 <body class="min-h-screen">
     <div id="login" class="fixed inset-0 z-50 flex items-center justify-center bg-black">
-        <div class="glass rounded-3xl p-10 max-w-md w-full mx-4">
+        <div class="glass rounded-3xl p-10 max-w-md w-full mx-4 text-white">
             <div class="text-center mb-8">
                 <div class="titan-gradient w-20 h-20 rounded-2xl mx-auto mb-4 flex items-center justify-center pulse">
                     <i class="fas fa-dumbbell text-3xl text-black"></i>
@@ -36,7 +36,6 @@
             </div>
             <div id="pinEntry" class="hidden mt-4 space-y-4 animate-fade-in">
                 <input type="password" id="loginPin" placeholder="Ingrese su PIN de acceso" class="w-full bg-black/50 border border-orange-500/50 rounded-xl px-4 py-4 text-center text-2xl tracking-widest outline-none focus:border-orange-500">
-            </div>
             <div id="loginForm" class="mt-4 space-y-4 animate-fade-in">
                 <input type="email" id="loginEmail" placeholder="Correo electrónico" class="w-full bg-black/50 border border-orange-500/50 rounded-xl px-4 py-4 text-center outline-none focus:border-orange-500">
                 <input type="password" id="loginPassword" placeholder="Contraseña" class="w-full bg-black/50 border border-orange-500/50 rounded-xl px-4 py-4 text-center outline-none focus:border-orange-500">
@@ -150,6 +149,12 @@
                         </a>
                     </div>
                     
+                    <a href="#" onclick="showView('dashboard')" class="nav-item flex items-center gap-3 p-3 rounded-xl bg-orange-500/20 text-orange-500">
+                        <i class="fas fa-chart-pie w-6"></i> <span data-lang="dashboard">Dashboard</span> 
+                    </a>
+                    <a href="#" onclick="showView('clientes')" class="nav-item flex items-center gap-3 p-3 rounded-xl hover:bg-white/10">
+                        <i class="fas fa-users w-6"></i> <span data-lang="clientes">Clientes</span>
+                    </a>
                     <a href="#" onclick="showView('scanner')" class="nav-item flex items-center gap-3 p-3 rounded-xl hover:bg-white/10">
                         <i class="fas fa-camera w-6"></i> <span>Escáner 360°</span>
                     </a>
