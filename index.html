@@ -1,0 +1,767 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TITAN GYMFORCE PRO 360 ELITE - Edición Premium</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body class="min-h-screen">
+    <div id="login" class="fixed inset-0 z-50 flex items-center justify-center bg-black">
+        <div class="glass rounded-3xl p-10 max-w-md w-full mx-4">
+            <div class="text-center mb-8">
+                <div class="titan-gradient w-20 h-20 rounded-2xl mx-auto mb-4 flex items-center justify-center pulse">
+                    <i class="fas fa-dumbbell text-3xl text-black"></i>
+                </div>
+                <h1 class="text-3xl font-black">TITAN GYMFORCE</h1>
+                <p class="text-xl font-bold text-orange-500">PRO 360</p>
+                <p class="text-xs text-gray-500 mt-2">propiedad de gs tecnología derecho reservado 2026</p>
+            </div>
+            <div id="loginOptions" class="space-y-3">
+                <button onclick="login('owner')" class="w-full titan-gradient text-black font-bold py-4 rounded-xl hover:opacity-90">
+                    <i class="fas fa-crown mr-2"></i> Dueño de Gimnasio
+                </button>
+                <button onclick="login('coach')" class="w-full glass py-4 rounded-xl hover:bg-white/10">
+                    <i class="fas fa-user-tie mr-2"></i> Coach
+                </button>
+                <button onclick="login('admin')" class="w-full bg-gray-800 py-4 rounded-xl hover:bg-gray-700">
+                    <i class="fas fa-shield-alt mr-2"></i> Admin GS Tecnología
+                </button>
+            </div>
+            <div id="pinEntry" class="hidden mt-4 space-y-4 animate-fade-in">
+                <input type="password" id="loginPin" placeholder="Ingrese su PIN de acceso" class="w-full bg-black/50 border border-orange-500/50 rounded-xl px-4 py-4 text-center text-2xl tracking-widest outline-none focus:border-orange-500">
+            </div>
+            <div id="loginForm" class="mt-4 space-y-4 animate-fade-in">
+                <input type="email" id="loginEmail" placeholder="Correo electrónico" class="w-full bg-black/50 border border-orange-500/50 rounded-xl px-4 py-4 text-center outline-none focus:border-orange-500">
+                <input type="password" id="loginPassword" placeholder="Contraseña" class="w-full bg-black/50 border border-orange-500/50 rounded-xl px-4 py-4 text-center outline-none focus:border-orange-500">
+                <div class="flex gap-2">
+                    <button onclick="verifyPin()" class="flex-1 titan-gradient text-black font-bold py-3 rounded-xl">Entrar</button>
+                    <button onclick="cancelPin()" class="px-6 glass py-3 rounded-xl text-xs">Atrás</button>
+                    <button onclick="signInUser()" class="flex-1 titan-gradient text-black font-bold py-3 rounded-xl">Iniciar Sesión</button>
+                </div>
+            </div>
+            <div class="flex justify-center gap-2 mt-6">
+                <button onclick="setLang('es')" class="text-xs px-3 py-1 rounded bg-orange-500 text-black font-bold">ES</button>
+                <button onclick="setLang('en')" class="text-xs px-3 py-1 rounded glass">EN</button>
+                <button onclick="setLang('pt')" class="text-xs px-3 py-1 rounded glass">PT</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Formulario de Registro de Usuarios (Solo para Admin) -->
+    <div id="registerUser" class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 hidden">
+        <div class="glass rounded-3xl p-10 max-w-md w-full mx-4">
+            <div class="text-center mb-8">
+                <h1 class="text-2xl font-black">Registrar Nuevo Usuario</h1>
+                <p class="text-sm text-gray-400">Solo para administradores</p>
+            </div>
+            <div class="space-y-4">
+                <input type="text" id="registerNombre" placeholder="Nombre completo" class="w-full bg-black/50 border border-gray-700 rounded-xl px-4 py-3 outline-none focus:border-orange-500">
+                <input type="email" id="registerEmail" placeholder="Correo electrónico" class="w-full bg-black/50 border border-gray-700 rounded-xl px-4 py-3 outline-none focus:border-orange-500">
+                <input type="password" id="registerPassword" placeholder="Contraseña (mín. 6 caracteres)" class="w-full bg-black/50 border border-gray-700 rounded-xl px-4 py-3 outline-none focus:border-orange-500">
+                <select id="registerRole" class="w-full bg-black/50 border border-gray-700 rounded-xl px-4 py-3 outline-none focus:border-orange-500">
+                    <option value="coach">Coach</option>
+                    <option value="owner">Dueño de Gimnasio</option>
+                    <option value="admin">Admin GS Tecnología</option>
+                </select>
+                <div class="flex gap-2">
+                    <button onclick="signUpUser()" class="flex-1 titan-gradient text-black font-bold py-3 rounded-xl">Registrar</button>
+                    <button onclick="showView('dashboard')" class="px-6 glass py-3 rounded-xl text-xs">Cancelar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="app" class="hidden">
+        <header class="glass sticky top-0 z-40 border-b border-orange-500/20">
+            <div class="flex items-center justify-between px-6 py-4">
+                <div class="flex items-center gap-4">
+                    <button onclick="showView('dashboard')" class="titan-gradient w-12 h-12 rounded-xl flex items-center justify-center hover:opacity-90" title="Inicio">
+                        <i class="fas fa-home text-black text-xl"></i>
+                    </button>
+                    <div>
+                        <h1 class="font-black text-xl" id="gymName">TITAN GYM</h1>
+                        <p class="text-xs text-orange-500">PRO 360 • Ecuador</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-3">
+                    <div class="hidden md:flex items-center gap-2 glass px-4 py-2 rounded-full">
+                        <div class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                        <span class="text-sm" id="clientCount">0 Clientes</span>
+                    </div>
+                    <div class="flex gap-1">
+                        <button onclick="setLang('es')" class="text-xs w-8 h-8 rounded-lg glass hover:bg-orange-500 hover:text-black font-bold">ES</button>
+                        <button onclick="setLang('en')" class="text-xs w-8 h-8 rounded-lg glass hover:bg-orange-500 hover:text-black">EN</button>
+                        <button onclick="setLang('pt')" class="text-xs w-8 h-8 rounded-lg glass hover:bg-orange-500 hover:text-black">PT</button>
+                    </div>
+                    <button onclick="showConfig()" class="glass p-3 rounded-xl hover:bg-white/10">
+                        <i class="fas fa-sliders"></i>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <div class="flex">
+            <aside class="w-20 md:w-64 glass min-h-screen p-4 hidden md:block">
+                <nav class="space-y-2">
+                    <div class="mb-4 pb-3 border-b border-yellow-500/30">
+                        <p class="text-[10px] text-yellow-500 font-black uppercase tracking-widest mb-2 px-3">🔥 ELITE NUEVO</p>
+                        <a href="#" onclick="showView('video-analisis')" class="nav-item flex items-center gap-3 p-3 rounded-xl hover:bg-yellow-500/10 border border-yellow-500/20 mb-2">
+                            <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-yellow-400 to-orange-500 flex items-center justify-center animate-pulse">
+                                <i class="fas fa-video text-black text-lg"></i>
+                            </div>
+                            <div class="flex-1">
+                                <span class="font-bold text-yellow-400">Video Análisis</span>
+                                <p class="text-[10px] text-gray-500">IA en tiempo real</p>
+                            </div>
+                        </a>
+                        <a href="#" onclick="showView('marketplace')" class="nav-item flex items-center gap-3 p-3 rounded-xl hover:bg-green-500/10 border border-green-500/20 mb-2">
+                            <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-green-400 to-emerald-500 flex items-center justify-center">
+                                <i class="fas fa-store text-black text-lg"></i>
+                            </div>
+                            <div class="flex-1">
+                                <span class="font-bold text-green-400">Marketplace</span>
+                                <p class="text-[10px] text-gray-500">$2,340 este mes</p>
+                            </div>
+                        </a>
+                        <a href="#" onclick="showView('reconocimiento')" class="nav-item flex items-center gap-3 p-3 rounded-xl hover:bg-blue-500/10 border border-blue-500/20 mb-2">
+                            <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-400 to-cyan-500 flex items-center justify-center">
+                                <i class="fas fa-face-smile text-black text-lg"></i>
+                            </div>
+                            <div class="flex-1">
+                                <span class="font-bold text-blue-400">Face ID</span>
+                                <p class="text-[10px] text-gray-500">Check-in facial</p>
+                            </div>
+                        </a>
+                        <a href="#" onclick="showView('franquicias')" class="nav-item flex items-center gap-3 p-3 rounded-xl hover:bg-purple-500/10 border border-purple-500/20">
+                            <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-400 to-pink-500 flex items-center justify-center">
+                                <i class="fas fa-network-wired text-black text-lg"></i>
+                            </div>
+                            <div class="flex-1">
+                                <span class="font-bold text-purple-400">Franquicias</span>
+                                <p class="text-[10px] text-gray-500">Multi-sede</p>
+                            </div>
+                        </a>
+                    </div>
+                    
+                    <a href="#" onclick="showView('scanner')" class="nav-item flex items-center gap-3 p-3 rounded-xl hover:bg-white/10">
+                        <i class="fas fa-camera w-6"></i> <span>Escáner 360°</span>
+                    </a>
+                    <a href="#" onclick="showView('rutinas')" class="nav-item flex items-center gap-3 p-3 rounded-xl hover:bg-white/10">
+                        <i class="fas fa-brain w-6"></i> <span>Rutinas IA</span>
+                    </a>
+                    <a href="#" onclick="showView('progresion')" class="nav-item flex items-center gap-3 p-3 rounded-xl hover:bg-white/10">
+                        <i class="fas fa-chart-line w-6"></i> <span>Progresión 6M</span>
+                    </a>
+                    <a href="#" onclick="showView('suscripciones')" class="nav-item flex items-center gap-3 p-3 rounded-xl hover:bg-white/10">
+                        <i class="fas fa-credit-card w-6"></i> <span data-lang="suscripciones">Suscripciones</span>
+                    </a>
+                    <a href="#" onclick="showView('calendario')" class="nav-item flex items-center gap-3 p-3 rounded-xl hover:bg-white/10">
+                        <i class="fas fa-calendar-alt w-6"></i> <span>Calendario</span>
+                    </a>
+                    <a href="#" onclick="showView('nutricion')" class="nav-item flex items-center gap-3 p-3 rounded-xl hover:bg-white/10">
+                        <i class="fas fa-apple-alt w-6"></i> <span>Nutrición</span>
+                    </a>
+                    <a href="#" onclick="showView('certificados')" class="nav-item flex items-center gap-3 p-3 rounded-xl hover:bg-white/10">
+                        <i class="fas fa-award w-6"></i> <span>Certificados</span>
+                    </a>
+                    <a href="#" onclick="showView('pagos')" class="nav-item flex items-center gap-3 p-3 rounded-xl hover:bg-white/10">
+                        <i class="fas fa-mobile-alt w-6"></i> <span>PayPhone</span>
+                    </a>
+                    <a href="#" onclick="showView('checkin')" class="nav-item flex items-center gap-3 p-3 rounded-xl hover:bg-white/10">
+                        <i class="fas fa-qrcode w-6"></i> <span>Check-In QR</span>
+                    </a>
+                    <a href="#" onclick="showView('configuracion')" class="nav-item flex items-center gap-3 p-3 rounded-xl hover:bg-white/10">
+                        <i class="fas fa-cog w-6"></i> <span>Configuración</span>
+                    </a>
+                    <a href="#" onclick="showView('whatsapp')" class="nav-item flex items-center gap-3 p-3 rounded-xl hover:bg-white/10" data-role-access="owner,admin">
+                        <i class="fab fa-whatsapp w-6"></i> <span>WhatsApp Auto</span>
+                    </a>
+                    <a href="#" onclick="showView('registerUser')" class="nav-item flex items-center gap-3 p-3 rounded-xl hover:bg-white/10" data-role-access="admin">
+                        <i class="fas fa-user-plus w-6"></i> <span>Registrar Personal</span>
+                    </a>
+                    <a href="#" onclick="showView('usuarios')" class="nav-item flex items-center gap-3 p-3 rounded-xl hover:bg-white/10" data-role-access="admin">
+                        <i class="fas fa-users-cog w-6"></i> <span>Gestión Usuarios</span>
+                    </a>
+                    <a href="#" onclick="showView('analytics')" class="nav-item flex items-center gap-3 p-3 rounded-xl hover:bg-white/10" data-role-access="owner,admin">
+                        <i class="fas fa-chart-bar w-6"></i> <span>Analytics Pro</span>
+                    </a>
+                    <a href="#" onclick="showView('ia-corporal')" class="nav-item flex items-center gap-3 p-3 rounded-xl hover:bg-white/10">
+                        <i class="fas fa-eye w-6"></i> <span>IA Corporal</span>
+                    </a>
+                    <a href="#" onclick="showView('competencias')" class="nav-item flex items-center gap-3 p-3 rounded-xl hover:bg-white/10">
+                        <i class="fas fa-trophy w-6"></i> <span>Competencias</span>
+                    </a>
+                    <a href="#" onclick="showView('wearables')" class="nav-item flex items-center gap-3 p-3 rounded-xl hover:bg-white/10">
+                        <i class="fas fa-watch w-6"></i> <span>Wearables</span>
+                    </a>
+                    <a href="#" onclick="showView('predictiva')" class="nav-item flex items-center gap-3 p-3 rounded-xl hover:bg-white/10">
+                        <i class="fas fa-crystal-ball w-6"></i> <span>IA Predictiva</span>
+                    </a>
+                </nav>
+            </aside>
+
+            <main class="flex-1 p-6">
+                <!-- Contenido de las vistas (Dashboard, Clientes, etc.) -->
+                <div id="dashboard" class="view">
+                    <div class="glass-premium rounded-2xl p-6 mb-8 border-2 border-yellow-500/50 relative overflow-hidden">
+                        <div class="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-yellow-500/20 to-transparent rounded-bl-full"></div>
+                        <div class="flex items-center justify-between relative z-10">
+                            <div>
+                                <div class="flex items-center gap-3 mb-2">
+                                    <span class="premium-badge">NUEVO</span>
+                                    <h3 class="text-xl font-black">4 Módulos ELITE Activados</h3>
+                                </div>
+                                <p class="text-gray-400">Video Análisis • Marketplace • Face ID • Franquicias</p>
+                            </div>
+                            <div class="flex gap-2">
+                                <button onclick="showView('video-analisis')" class="bg-yellow-500/20 hover:bg-yellow-500/30 text-yellow-400 px-4 py-2 rounded-xl text-sm font-bold border border-yellow-500/30">Probar Video IA</button>
+                                <button onclick="showView('marketplace')" class="bg-green-500/20 hover:bg-green-500/30 text-green-400 px-4 py-2 rounded-xl text-sm font-bold border border-green-500/30">Ver Marketplace</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="flex justify-between items-center mb-8">
+                        <div>
+                            <h2 class="text-3xl font-black" data-lang="dashboard_title">DASHBOARD TITAN</h2>
+                            <p class="text-gray-400">Sistema inteligente para gimnasios del Ecuador</p>
+                        </div>
+                        <button onclick="showView('clientes')" class="titan-gradient text-black font-bold px-6 py-3 rounded-xl">
+                            <i class="fas fa-plus mr-2"></i> <span data-lang="nuevo_cliente">Nuevo Cliente</span>
+                        </button>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                        <div class="glass rounded-2xl p-6 card-hover">
+                            <div class="flex justify-between items-start">
+                                <div><p class="text-gray-400 text-sm">Clientes Activos</p><p class="text-3xl font-black mt-2" id="statClientes">247</p><p class="text-green-500 text-xs mt-1">+12 este mes</p></div>
+                                <div class="titan-gradient p-3 rounded-xl"><i class="fas fa-users text-black"></i></div>
+                            </div>
+                        </div>
+                        <div class="glass rounded-2xl p-6 card-hover">
+                            <div class="flex justify-between items-start">
+                                <div><p class="text-gray-400 text-sm">Por Vencer</p><p class="text-3xl font-black mt-2 text-yellow-500" id="statVencer">8</p><p class="text-yellow-500 text-xs mt-1">Próximos 7 días</p></div>
+                                <div class="bg-yellow-500/20 p-3 rounded-xl"><i class="fas fa-exclamation-triangle text-yellow-500"></i></div>
+                            </div>
+                        </div>
+                        <div class="glass rounded-2xl p-6 card-hover">
+                            <div class="flex justify-between items-start">
+                                <div><p class="text-gray-400 text-sm">Ingresos Mes</p><p class="text-3xl font-black mt-2">$8,450</p><p class="text-green-500 text-xs mt-1">+18% vs anterior</p></div>
+                                <div class="bg-green-500/20 p-3 rounded-xl"><i class="fas fa-dollar-sign text-green-500"></i></div>
+                            </div>
+                        </div>
+                        <div class="glass rounded-2xl p-6 card-hover">
+                            <div class="flex justify-between items-start">
+                                <div><p class="text-gray-400 text-sm">Coaches</p><p class="text-3xl font-black mt-2">14/20</p><p class="text-gray-400 text-xs mt-1">Capacidad 70%</p></div>
+                                <div class="bg-blue-500/20 p-3 rounded-xl"><i class="fas fa-user-tie text-blue-500"></i></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="clientes" class="view hidden">
+                    <div class="flex items-center gap-4 mb-6">
+                        <button onclick="showView('dashboard')" class="glass p-3 rounded-xl"><i class="fas fa-arrow-left"></i></button>
+                        <h2 class="text-3xl font-black">Gestión de Clientes</h2>
+                    </div>
+                    <div class="glass rounded-2xl p-6">
+                        <div class="grid md:grid-cols-2 gap-6">
+                            <div><label class="text-sm text-gray-400">Nombre Completo</label><input id="cNombre" class="w-full bg-black/50 border border-gray-700 rounded-xl px-4 py-3 mt-1" placeholder="Juan Pérez"></div>
+                            <div><label class="text-sm text-gray-400">Cédula</label><input id="cCedula" class="w-full bg-black/50 border border-gray-700 rounded-xl px-4 py-3 mt-1" placeholder="1712345678"></div>
+                            <div><label class="text-sm text-gray-400">Edad</label><input id="cEdad" type="number" class="w-full bg-black/50 border border-gray-700 rounded-xl px-4 py-3 mt-1"></div>
+                            <div><label class="text-sm text-gray-400">Fecha Nacimiento</label><input id="cFecha" type="date" class="w-full bg-black/50 border border-gray-700 rounded-xl px-4 py-3 mt-1"></div>
+                            <div><label class="text-sm text-gray-400">Peso (kg)</label><input id="cPeso" type="number" class="w-full bg-black/50 border border-gray-700 rounded-xl px-4 py-3 mt-1"></div>
+                            <div><label class="text-sm text-gray-400">Estatura (cm)</label><input id="cEstatura" type="number" class="w-full bg-black/50 border border-gray-700 rounded-xl px-4 py-3 mt-1"></div>
+                            <div><label class="text-sm text-gray-400">Objetivo Físico</label><select id="cObjetivo" class="w-full bg-black/50 border border-gray-700 rounded-xl px-4 py-3 mt-1"><option>Perder grasa</option><option>Ganar masa muscular</option><option>Tonificar</option><option>Rendimiento deportivo</option><option>Rehabilitación</option></select></div>
+                            <div><label class="text-sm text-gray-400">Nivel Experiencia</label><select id="cNivel" class="w-full bg-black/50 border border-gray-700 rounded-xl px-4 py-3 mt-1"><option>BÁSICO</option><option>INTERMEDIO</option><option>AVANZADO</option><option>PROFESIONAL</option></select></div>
+                            <div class="md:col-span-2">
+                                <div class="flex justify-between items-center mb-2">
+                                    <label class="text-sm text-red-500 font-bold uppercase tracking-tight">Condiciones Médicas / Enfermedades</label>
+                                    <button type="button" onclick="limpiarEnfermedades()" class="text-[10px] text-gray-500 hover:text-red-400 transition underline">No tengo ninguna</button>
+                                </div>
+                                <div class="grid grid-cols-2 md:grid-cols-3 gap-3 mb-3">
+                                    <label class="flex items-center gap-2 text-xs text-gray-300 cursor-pointer"><input type="checkbox" class="enfermedad-check" value="Diabetes"> Diabetes</label>
+                                    <label class="flex items-center gap-2 text-xs text-gray-300 cursor-pointer"><input type="checkbox" class="enfermedad-check" value="Hipertensión"> Hipertensión</label>
+                                    <label class="flex items-center gap-2 text-xs text-gray-300 cursor-pointer"><input type="checkbox" class="enfermedad-check" value="Gastritis"> Gastritis</label>
+                                    <label class="flex items-center gap-2 text-xs text-gray-300 cursor-pointer"><input type="checkbox" class="enfermedad-check" value="Asma"> Asma</label>
+                                    <label class="flex items-center gap-2 text-xs text-gray-300 cursor-pointer"><input type="checkbox" class="enfermedad-check" value="Cardiopatía"> Problemas Cardíacos</label>
+                                    <label class="flex items-center gap-2 text-xs text-gray-300 cursor-pointer"><input type="checkbox" class="enfermedad-check" id="checkOtra" onchange="document.getElementById('cEnfermedades').classList.toggle('hidden', !this.checked)"> Otra...</label>
+                                </div>
+                                <textarea id="cEnfermedades" class="w-full bg-black/50 border border-red-500/30 rounded-xl px-4 py-3 h-20 hidden" placeholder="Especifique su enfermedad o condición..."></textarea>
+                            </div>
+                            <div class="md:col-span-2"><label class="text-sm text-gray-400">Historial de Lesiones (Opcional)</label><textarea id="cHistorial" class="w-full bg-black/50 border border-gray-700 rounded-xl px-4 py-3 mt-1 h-20" placeholder="Cirugías previas, fracturas, etc."></textarea></div>
+                            <div class="md:col-span-2"><label class="text-sm text-orange-500 font-bold uppercase tracking-tight">Presupuesto y Alimentos Disponibles (Enfoque Económico)</label><textarea id="cAlimentos" class="w-full bg-black/50 border border-orange-500/30 rounded-xl px-4 py-3 mt-1 h-20" placeholder="Ej: Tengo acceso a huevos, arroz, lentejas y pollo. Mi presupuesto es limitado."></textarea></div>
+                            <div class="md:col-span-2"><label class="text-sm text-gray-400 mb-2 block">Molestias Articulares</label><div class="flex gap-4 flex-wrap"><label class="flex items-center gap-2"><input type="checkbox" class="lesion" value="rodillas"> Rodillas</label><label class="flex items-center gap-2"><input type="checkbox" class="lesion" value="hombros"> Hombros</label><label class="flex items-center gap-2"><input type="checkbox" class="lesion" value="espalda"> Espalda baja</label><label class="flex items-center gap-2"><input type="checkbox" class="lesion" value="cadera"> Cadera</label></div></div>
+                        </div>
+                        <button onclick="guardarCliente()" class="mt-6 titan-gradient text-black font-bold px-8 py-3 rounded-xl"><i class="fas fa-save mr-2"></i> Guardar Cliente</button>
+                    </div>
+                </div>
+
+                <div id="scanner" class="view hidden">
+                    <div class="flex items-center gap-4 mb-6"><button onclick="showView('dashboard')" class="glass p-3 rounded-xl"><i class="fas fa-arrow-left"></i></button><h2 class="text-3xl font-black">Escáner Corporal 360°</h2></div>
+                    <div class="grid md:grid-cols-2 gap-6">
+                        <div class="glass rounded-2xl p-6">
+                            <h3 class="font-bold mb-4">Captura Fotográfica</h3>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div class="text-center"><div id="preview-frontal" class="scan-frame rounded-xl bg-black flex items-center justify-center mb-2"><i class="fas fa-camera text-3xl text-gray-600"></i></div><p class="text-sm mb-2">FRONTAL</p><button onclick="tomarFoto('frontal')" class="w-full bg-orange-500/20 text-orange-500 py-2 rounded-lg text-sm font-bold"><i class="fas fa-camera mr-1"></i> Tomar</button></div>
+                                <div class="text-center"><div id="preview-posterior" class="scan-frame rounded-xl bg-black flex items-center justify-center mb-2"><i class="fas fa-camera text-3xl text-gray-600"></i></div><p class="text-sm mb-2">POSTERIOR</p><button onclick="tomarFoto('posterior')" class="w-full bg-orange-500/20 text-orange-500 py-2 rounded-lg text-sm font-bold"><i class="fas fa-camera mr-1"></i> Tomar</button></div>
+                                <div class="text-center"><div id="preview-lateral-izq" class="scan-frame rounded-xl bg-black flex items-center justify-center mb-2"><i class="fas fa-camera text-3xl text-gray-600"></i></div><p class="text-sm mb-2">LATERAL IZQ</p><button onclick="tomarFoto('lateral-izq')" class="w-full bg-orange-500/20 text-orange-500 py-2 rounded-lg text-sm font-bold"><i class="fas fa-camera mr-1"></i> Tomar</button></div>
+                                <div class="text-center"><div id="preview-lateral-der" class="scan-frame rounded-xl bg-black flex items-center justify-center mb-2"><i class="fas fa-camera text-3xl text-gray-600"></i></div><p class="text-sm mb-2">LATERAL DER</p><button onclick="tomarFoto('lateral-der')" class="w-full bg-orange-500/20 text-orange-500 py-2 rounded-lg text-sm font-bold"><i class="fas fa-camera mr-1"></i> Tomar</button></div>
+                            </div>
+                            <video id="video" class="hidden w-full rounded-xl mt-4" autoplay></video><canvas id="canvas" class="hidden"></canvas>
+                        </div>
+                        <div class="glass rounded-2xl p-6">
+                            <h3 class="font-bold mb-4">Análisis Automático IA</h3>
+                            <button onclick="analizarCuerpo()" class="w-full titan-gradient text-black font-bold py-4 rounded-xl mb-6 pulse"><i class="fas fa-brain mr-2"></i> ANALIZAR CUERPO</button>
+                            <div id="resultadosAnalisis" class="space-y-4 hidden">
+                                <div class="bg-black/50 p-4 rounded-xl"><p class="text-sm text-gray-400">IMC</p><p class="text-2xl font-bold text-orange-500" id="imc">24.2</p></div>
+                                <div class="bg-black/50 p-4 rounded-xl"><p class="text-sm text-gray-400">% Grasa Estimado</p><p class="text-2xl font-bold" id="grasa">18.5%</p></div>
+                                <div class="bg-black/50 p-4 rounded-xl"><p class="text-sm text-gray-400">Somatotipo</p><p class="text-xl font-bold" id="somatotipo">Mesomorfo</p></div>
+                                <div class="bg-green-500/10 border border-green-500/30 p-4 rounded-xl"><p class="text-sm font-bold text-green-500 mb-1">✓ Recomendación IA</p><div id="recomendacionIA" class="text-sm"></div></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="progresion" class="view hidden" data-role-access="coach,owner,admin">
+                    <div class="flex items-center gap-4 mb-6"><button onclick="showView('dashboard')" class="glass p-3 rounded-xl"><i class="fas fa-arrow-left"></i></button><h2 class="text-3xl font-black">Progresión Automática 6 Meses</h2></div>
+                    <div class="glass rounded-2xl p-6">
+                        <div class="grid md:grid-cols-3 gap-6 mb-6">
+                            <div class="bg-black/50 p-4 rounded-xl"><p class="text-sm text-gray-400">Mes Actual</p><p class="text-2xl font-bold text-orange-500">Mes 3</p><p class="text-xs">Hipertrofia Inicial</p></div>
+                            <div class="bg-black/50 p-4 rounded-xl"><p class="text-sm text-gray-400">Progreso</p><p class="text-2xl font-bold">67%</p><div class="w-full bg-gray-800 h-2 rounded mt-2"><div class="titan-gradient h-2 rounded" style="width:67%"></div></div></div>
+                            <div class="bg-black/50 p-4 rounded-xl"><p class="text-sm text-gray-400">Próximo cambio</p><p class="text-xl font-bold">12 días</p><p class="text-xs">Fuerza Básica</p></div>
+                        </div>
+                        <div class="space-y-4" id="progresionMeses"></div>
+                        <button onclick="activarProgresion()" class="mt-6 titan-gradient text-black font-bold px-8 py-3 rounded-xl"><i class="fas fa-rocket mr-2"></i> Activar Progresión Automática</button>
+                    </div>
+                </div>
+
+                <div id="certificados" class="view hidden">
+                    <div class="flex items-center gap-4 mb-6"><button onclick="showView('dashboard')" class="glass p-3 rounded-xl"><i class="fas fa-arrow-left"></i></button><h2 class="text-3xl font-black">Certificados Automáticos</h2></div>
+                    <div class="glass rounded-2xl p-8 text-center">
+                        <div class="titan-gradient w-24 h-24 rounded-full mx-auto mb-6 flex items-center justify-center"><i class="fas fa-award text-4xl text-black"></i></div>
+                        <h3 class="text-2xl font-bold mb-4">Certificado de Finalización</h3>
+                        <p class="text-gray-400 mb-6">Se genera automáticamente al completar suscripción</p>
+                        <div class="max-w-md mx-auto bg-black/50 p-6 rounded-xl border-2 border-orange-500/50">
+                            <p class="text-xs text-orange-500 mb-2">CERTIFICADO OFICIAL</p>
+                            <p class="font-bold text-xl mb-1" id="certNombre">MARÍA GONZÁLEZ</p>
+                            <p class="text-sm text-gray-400">Ha completado exitosamente su programa de entrenamiento</p>
+                            <p class="text-xs mt-4">TITAN GYM • Mayo 2026</p>
+                        </div>
+                        <button onclick="generarCertificado('Demo')" class="mt-6 titan-gradient text-black font-bold px-8 py-3 rounded-xl"><i class="fas fa-download mr-2"></i> Descargar Certificado PDF</button>
+                    </div>
+                </div>
+
+                <div id="pagos" class="view hidden" data-role-access="coach,owner,admin">
+                <div id="pagos" class="view hidden">
+                    <div class="flex items-center gap-4 mb-6"><button onclick="showView('dashboard')" class="glass p-3 rounded-xl"><i class="fas fa-arrow-left"></i></button><h2 class="text-3xl font-black">Pagos PayPhone Ecuador</h2></div>
+                    <div class="grid md:grid-cols-2 gap-6">
+                        <div class="glass rounded-2xl p-6">
+                            <div class="flex items-center gap-3 mb-6"><img src="https://payphone.app/img/logo.png" class="h-8 bg-white p-1 rounded" onerror="this.style.display='none'"><h3 class="font-bold text-xl">Cobro Rápido</h3></div>
+                            <div class="space-y-4">
+                                <select id="pagoCliente" class="w-full bg-black/50 border border-gray-700 rounded-xl px-4 py-3"><option>Seleccionar cliente...</option></select>
+                                <input id="pagoMonto" type="number" placeholder="Monto USD" class="w-full bg-black/50 border border-gray-700 rounded-xl px-4 py-3" value="35">
+                                <select id="pagoConcepto" class="w-full bg-black/50 border border-gray-700 rounded-xl px-4 py-3"><option>Mensualidad</option><option>Trimestral</option><option>Anual</option><option>Personal Training</option></select>
+                                <button onclick="generarPagoPayPhone()" class="w-full titan-gradient text-black font-bold py-4 rounded-xl text-lg"><i class="fas fa-mobile-alt mr-2"></i> Generar Cobro PayPhone</button>
+                            </div>
+                            <div class="mt-6 p-4 bg-blue-500/10 border border-blue-500/30 rounded-xl"><p class="text-xs text-blue-400"><i class="fas fa-info-circle mr-1"></i> Integración lista para Ecuador. Acepta tarjetas, transferencias y PayPhone Wallet.</p></div>
+                        </div>
+                        <div class="glass rounded-2xl p-6">
+                            <h3 class="font-bold mb-4">QR de Pago</h3>
+                            <div id="qrPago" class="bg-white p-8 rounded-xl flex items-center justify-center min-h-[250px]">
+                                <div class="text-center text-gray-500"><i class="fas fa-qrcode text-5xl mb-3"></i><p>Genera un cobro para mostrar QR</p></div>
+                            </div>
+                            <div id="pagoStatus" class="mt-4 hidden"><div class="p-3 bg-green-500/20 border border-green-500 rounded-xl text-center"><i class="fas fa-check-circle text-green-500 mr-2"></i><span class="font-bold">Pago Recibido - $35.00</span></div></div>
+                        </div>
+                    </div>
+                    <div class="glass rounded-2xl p-6 mt-6">
+                        <h3 class="font-bold mb-4">Historial de Pagos</h3>
+                        <div class="space-y-2">
+                            <div class="flex justify-between items-center p-3 bg-black/30 rounded-lg"><div><p class="font-semibold">María González</p><p class="text-xs text-gray-400">PayPhone • 27/05/2026 10:23</p></div><p class="text-green-500 font-bold">$120.00</p></div>
+                            <div class="flex justify-between items-center p-3 bg-black/30 rounded-lg"><div><p class="font-semibold">Carlos Pérez</p><p class="text-xs text-gray-400">Tarjeta • 26/05/2026</p></div><p class="text-green-500 font-bold">$35.00</p></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="checkin" class="view hidden" data-role-access="coach,owner,admin">
+                <div id="checkin" class="view hidden">
+                    <div class="flex items-center gap-4 mb-6"><button onclick="showView('dashboard')" class="glass p-3 rounded-xl"><i class="fas fa-arrow-left"></i></button><h2 class="text-3xl font-black">Check-In QR Clientes</h2></div>
+                    <div class="grid md:grid-cols-2 gap-6">
+                        <div class="glass rounded-2xl p-6">
+                            <h3 class="font-bold mb-4">Escanear QR Cliente</h3>
+                            <div class="bg-black rounded-xl aspect-video flex items-center justify-center mb-4 relative overflow-hidden">
+                                <video id="qrVideo" class="w-full h-full object-cover hidden" autoplay></video>
+                                <div id="qrPlaceholder" class="text-center"><i class="fas fa-qrcode text-5xl text-gray-600 mb-3"></i><p class="text-gray-500">Cámara inactiva</p></div>
+                            </div>
+                            <button onclick="iniciarScannerQR()" class="w-full titan-gradient text-black font-bold py-3 rounded-xl mb-3"><i class="fas fa-camera mr-2"></i> Activar Cámara</button>
+                            <button onclick="simularCheckin()" class="w-full glass py-3 rounded-xl">Simular Check-In Demo</button>
+                        </div>
+                        <div class="glass rounded-2xl p-6">
+                            <h3 class="font-bold mb-4">Generar QR para Cliente</h3>
+                            <select id="qrCliente" class="w-full bg-black/50 border border-gray-700 rounded-xl px-4 py-3 mb-4"><option>Seleccionar cliente...</option></select>
+                            <div id="qrGenerado" class="bg-white p-6 rounded-xl flex items-center justify-center min-h-[200px]"><p class="text-gray-500">Selecciona cliente</p></div>
+                            <button onclick="generarQRCliente()" class="w-full mt-4 glass py-3 rounded-xl"><i class="fas fa-qrcode mr-2"></i> Generar QR</button>
+                        </div>
+                    </div>
+                    <div class="glass rounded-2xl p-6 mt-6">
+                        <h3 class="font-bold mb-4">Entradas Hoy - <span class="text-orange-500" id="contadorHoy">23</span> clientes</h3>
+                        <div class="grid md:grid-cols-3 gap-3" id="listaCheckins">
+                            <div class="p-3 bg-green-500/10 border border-green-500/30 rounded-lg"><p class="font-semibold">María G.</p><p class="text-xs text-gray-400">08:23 AM • Entrada</p></div>
+                            <div class="p-3 bg-green-500/10 border border-green-500/30 rounded-lg"><p class="font-semibold">Carlos P.</p><p class="text-xs text-gray-400">08:45 AM • Entrada</p></div>
+                            <div class="p-3 bg-blue-500/10 border border-blue-500/30 rounded-lg"><p class="font-semibold">Ana L.</p><p class="text-xs text-gray-400">09:12 AM • Salida</p></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="configuracion" class="view hidden" data-role-access="owner,admin">
+                <div id="configuracion" class="view hidden">
+                    <div class="flex items-center gap-4 mb-6"><button onclick="showView('dashboard')" class="glass p-3 rounded-xl"><i class="fas fa-arrow-left"></i></button><h2 class="text-3xl font-black">Configuración del Gimnasio</h2></div>
+                    <div class="grid md:grid-cols-2 gap-6">
+                        <div class="glass rounded-2xl p-6">
+                            <h3 class="font-bold text-xl mb-4 flex items-center gap-2"><i class="fas fa-store text-orange-500"></i> Datos del Negocio</h3>
+                            <div class="space-y-4">
+                                <div><label class="text-sm text-gray-400">Nombre Comercial *</label><input id="cfgNombre" class="w-full bg-black/50 border border-gray-700 rounded-xl px-4 py-3 mt-1" placeholder="TITAN GYM QUITO"></div>
+                                <div><label class="text-sm text-gray-400">RUC / Cédula *</label><input id="cfgRuc" class="w-full bg-black/50 border border-gray-700 rounded-xl px-4 py-3 mt-1" placeholder="1790012345001"></div>
+                                <div><label class="text-sm text-gray-400">Dirección</label><input id="cfgDireccion" class="w-full bg-black/50 border border-gray-700 rounded-xl px-4 py-3 mt-1" placeholder="Av. Amazonas N34-56, Quito"></div>
+                                <div class="grid grid-cols-2 gap-3">
+                                    <div><label class="text-sm text-gray-400">Teléfono</label><input id="cfgTelefono" class="w-full bg-black/50 border border-gray-700 rounded-xl px-4 py-3 mt-1" placeholder="0998765432"></div>
+                                    <div><label class="text-sm text-gray-400">Ciudad</label><input id="cfgCiudad" class="w-full bg-black/50 border border-gray-700 rounded-xl px-4 py-3 mt-1" value="Quito"></div>
+                                </div>
+                                <div><label class="text-sm text-gray-400">Email</label><input id="cfgEmail" type="email" class="w-full bg-black/50 border border-gray-700 rounded-xl px-4 py-3 mt-1" placeholder="info@titan.ec"></div>
+                            </div>
+                        </div>
+                        <div class="glass rounded-2xl p-6">
+                            <h3 class="font-bold text-xl mb-4 flex items-center gap-2"><i class="fas fa-palette text-orange-500"></i> Personalización Visual</h3>
+                            <div class="space-y-4">
+                                <div><label class="text-sm text-gray-400">Logo del Gimnasio</label><div class="mt-2 flex items-center gap-4"><div id="logoPreview" class="w-20 h-20 bg-black/50 rounded-xl flex items-center justify-center border-2 border-dashed border-gray-700"><i class="fas fa-image text-2xl text-gray-600"></i></div><input type="file" id="cfgLogo" accept="image/*" onchange="previewLogo(event)" class="text-sm"></div></div>
+                                <div class="grid grid-cols-2 gap-3">
+                                    <div><label class="text-sm text-gray-400">Color Primario</label><input id="cfgColor1" type="color" value="#FF3B00" class="w-full h-12 rounded-xl mt-1 cursor-pointer"></div>
+                                    <div><label class="text-sm text-gray-400">Color Secundario</label><input id="cfgColor2" type="color" value="#FF6B00" class="w-full h-12 rounded-xl mt-1 cursor-pointer"></div>
+                                </div>
+                                <div><label class="text-sm text-gray-400">Horario</label><div class="grid grid-cols-2 gap-3 mt-1"><input id="cfgApertura" type="time" value="06:00" class="bg-black/50 border border-gray-700 rounded-xl px-4 py-3"><input id="cfgCierre" type="time" value="22:00" class="bg-black/50 border border-gray-700 rounded-xl px-4 py-3"></div></div>
+                                <div><label class="text-sm text-gray-400">Moneda</label><select id="cfgMoneda" class="w-full bg-black/50 border border-gray-700 rounded-xl px-4 py-3 mt-1"><option value="USD">USD - Dólar Americano</option><option value="EUR">EUR - Euro</option></select></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="glass rounded-2xl p-6 mt-6">
+                        <h3 class="font-bold text-xl mb-4">Integración PayPhone Ecuador</h3>
+                        <div class="grid md:grid-cols-2 gap-4">
+                            <div><label class="text-sm text-gray-400">Token PayPhone</label><input id="cfgPayphoneToken" type="password" class="w-full bg-black/50 border border-gray-700 rounded-xl px-4 py-3 mt-1" placeholder="Token de producción"></div>
+                            <div><label class="text-sm text-gray-400">ID Tienda</label><input id="cfgPayphoneStore" class="w-full bg-black/50 border border-gray-700 rounded-xl px-4 py-3 mt-1" placeholder="123456"></div>
+                        </div>
+                        <p class="text-xs text-gray-500 mt-2">Obtén tus credenciales en payphone.app • Listo para cobrar en Ecuador</p>
+                    </div>
+                    <button onclick="guardarConfiguracionCompleta()" class="mt-6 titan-gradient text-black font-bold px-10 py-4 rounded-xl text-lg"><i class="fas fa-save mr-2"></i> Guardar Toda la Configuración</button>
+                </div>
+
+                <div id="whatsapp" class="view hidden" data-role-access="owner,admin">
+                <div id="whatsapp" class="view hidden">
+                    <div class="flex items-center gap-4 mb-6"><button onclick="showView('dashboard')" class="glass p-3 rounded-xl"><i class="fas fa-arrow-left"></i></button><h2 class="text-3xl font-black">WhatsApp Automático</h2><span class="bg-green-500 text-black px-3 py-1 rounded-full text-sm font-bold">ACTIVO</span></div>
+                    <div class="grid md:grid-cols-3 gap-6">
+                        <div class="md:col-span-2 glass rounded-2xl p-6">
+                            <h3 class="font-bold text-xl mb-4 flex items-center gap-2"><i class="fab fa-whatsapp text-green-500"></i> Mensajes Automáticos Configurados</h3>
+                            <div class="space-y-3">
+                                <div class="p-4 bg-black/50 rounded-xl border-l-4 border-yellow-500">
+                                    <div class="flex justify-between items-start">
+                                        <div class="flex-1">
+                                            <p class="font-bold">⚠️ Aviso Vencimiento (7 días antes)</p>
+                                            <p class="text-sm text-gray-400 mt-1">Hola {nombre}, tu suscripción en TITAN GYM vence el {fecha}. Renueva ahora y mantén tu progreso 💪</p>
+                                            <p class="text-xs text-green-500 mt-2">✓ Enviado automáticamente • 8 clientes esta semana</p>
+                                        </div>
+                                        <label class="relative inline-flex items-center cursor-pointer"><input type="checkbox" checked class="sr-only peer"><div class="w-11 h-6 bg-gray-700 rounded-full peer peer-checked:bg-green-500"></div></label>
+                                    </div>
+                                </div>
+                                <div class="p-4 bg-black/50 rounded-xl border-l-4 border-red-500">
+                                    <div class="flex justify-between items-start">
+                                        <div class="flex-1">
+                                            <p class="font-bold">🚨 Vencimiento Hoy</p>
+                                            <p class="text-sm text-gray-400 mt-1">¡Último día! Tu acceso vence HOY. Renueva en: payphone.link/titan</p>
+                                            <p class="text-xs text-green-500 mt-2">✓ Enviado automáticamente • 3 clientes hoy</p>
+                                        </div>
+                                        <label class="relative inline-flex items-center cursor-pointer"><input type="checkbox" checked class="sr-only peer"><div class="w-11 h-6 bg-gray-700 rounded-full peer peer-checked:bg-green-500"></div></label>
+                                    </div>
+                                </div>
+                                <div class="p-4 bg-black/50 rounded-xl border-l-4 border-blue-500">
+                                    <div class="flex justify-between items-start">
+                                        <div class="flex-1">
+                                            <p class="font-bold">🎉 Bienvenida Nuevo Cliente</p>
+                                            <p class="text-sm text-gray-400 mt-1">¡Bienvenido a TITAN! Tu rutina está lista. Descarga la app: titan.ec/app</p>
+                                            <p class="text-xs text-gray-400 mt-2">Se envía al registrar cliente</p>
+                                        </div>
+                                        <label class="relative inline-flex items-center cursor-pointer"><input type="checkbox" checked class="sr-only peer"><div class="w-11 h-6 bg-gray-700 rounded-full peer peer-checked:bg-green-500"></div></label>
+                                    </div>
+                                </div>
+                                <div class="p-4 bg-black/50 rounded-xl border-l-4 border-purple-500">
+                                    <div class="flex justify-between items-start">
+                                        <div class="flex-1">
+                                            <p class="font-bold">📊 Recordatorio Entrenamiento</p>
+                                            <p class="text-sm text-gray-400 mt-1">Hoy te toca: {rutina_dia}. ¡No faltes! 💪</p>
+                                            <p class="text-xs text-gray-400 mt-2">Envío diario 7:00 AM</p>
+                                        </div>
+                                        <label class="relative inline-flex items-center cursor-pointer"><input type="checkbox" class="sr-only peer"><div class="w-11 h-6 bg-gray-700 rounded-full peer"></div></label>
+                                    </div>
+                                </div>
+                            </div>
+                            <button onclick="probarWhatsApp()" class="mt-6 w-full titan-gradient text-black font-bold py-3 rounded-xl"><i class="fab fa-whatsapp mr-2"></i> Probar Envío WhatsApp</button>
+                        </div>
+                        <div class="glass rounded-2xl p-6">
+                            <h3 class="font-bold mb-4">Estadísticas</h3>
+                            <div class="space-y-4">
+                                <div class="text-center p-4 bg-green-500/10 rounded-xl"><p class="text-3xl font-black text-green-500">147</p><p class="text-sm text-gray-400">Mensajes este mes</p></div>
+                                <div class="text-center p-4 bg-blue-500/10 rounded-xl"><p class="text-3xl font-black text-blue-500">94%</p><p class="text-sm text-gray-400">Tasa de apertura</p></div>
+                                <div class="text-center p-4 bg-orange-500/10 rounded-xl"><p class="text-3xl font-black text-orange-500">23</p><p class="text-sm text-gray-400">Renovaciones por WhatsApp</p></div>
+                            </div>
+                            <div class="mt-6 p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-xl"><p class="text-xs"><i class="fas fa-lightbulb text-yellow-500 mr-1"></i> Los mensajes se envían automáticamente usando WhatsApp Business API</p></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="analytics" class="view hidden" data-role-access="owner,admin">
+                <div id="analytics" class="view hidden">
+                    <div class="flex items-center gap-4 mb-6"><button onclick="showView('dashboard')" class="glass p-3 rounded-xl"><i class="fas fa-arrow-left"></i></button><h2 class="text-3xl font-black">Analytics Pro - Dueño</h2></div>
+                    <div class="grid md:grid-cols-4 gap-4 mb-6">
+                        <div class="glass rounded-xl p-4"><p class="text-xs text-gray-400">Ingresos Totales</p><p class="text-2xl font-black text-green-500">$47,230</p><p class="text-xs text-green-500">↑ 23% vs mes anterior</p></div>
+                        <div class="glass rounded-xl p-4"><p class="text-xs text-gray-400">Clientes Activos</p><p class="text-2xl font-black">247</p><p class="text-xs text-blue-500">↑ 12 nuevos</p></div>
+                        <div class="glass rounded-xl p-4"><p class="text-xs text-gray-400">Ticket Promedio</p><p class="text-2xl font-black">$38.50</p><p class="text-xs text-gray-400">Por cliente/mes</p></div>
+                        <div class="glass rounded-xl p-4"><p class="text-xs text-gray-400">Retención</p><p class="text-2xl font-black text-orange-500">87%</p><p class="text-xs text-orange-500">Excelente</p></div>
+                    </div>
+                    <div class="grid md:grid-cols-2 gap-6">
+                        <div class="glass rounded-2xl p-6"><h3 class="font-bold mb-4">Ingresos Últimos 6 Meses</h3><canvas id="chartIngresos" height="200"></canvas></div>
+                        <div class="glass rounded-2xl p-6"><h3 class="font-bold mb-4">Clientes por Nivel</h3><canvas id="chartNiveles" height="200"></canvas></div>
+                        <div class="glass rounded-2xl p-6"><h3 class="font-bold mb-4">Renovaciones vs Cancelaciones</h3><canvas id="chartRenovaciones" height="200"></canvas></div>
+                        <div class="glass rounded-2xl p-6"><h3 class="font-bold mb-4">Horarios Pico</h3><canvas id="chartHorarios" height="200"></canvas></div>
+                    </div>
+                    <div class="glass rounded-2xl p-6 mt-6">
+                        <h3 class="font-bold mb-4">Proyección Financiera</h3>
+                        <div class="grid md:grid-cols-3 gap-4">
+                            <div class="bg-black/50 p-4 rounded-xl"><p class="text-sm text-gray-400">Proyección 3 meses</p><p class="text-xl font-bold text-green-500">$52,400</p></div>
+                            <div class="bg-black/50 p-4 rounded-xl"><p class="text-sm text-gray-400">Proyección 6 meses</p><p class="text-xl font-bold text-green-500">$61,800</p></div>
+                            <div class="bg-black/50 p-4 rounded-xl"><p class="text-sm text-gray-400">Proyección 12 meses</p><p class="text-xl font-bold text-green-500">$78,500</p></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="ia-corporal" class="view hidden" data-role-access="coach,owner,admin">
+                <div id="ia-corporal" class="view hidden">
+                    <div class="flex items-center gap-4 mb-6"><button onclick="showView('dashboard')" class="glass p-3 rounded-xl"><i class="fas fa-arrow-left"></i></button><h2 class="text-3xl font-black">IA Visión Computacional</h2><span class="bg-purple-500 text-black px-3 py-1 rounded-full text-sm font-bold">MULTI-FOTO</span></div>
+                    <div class="glass rounded-2xl p-6 mb-6">
+                        <label class="text-sm text-gray-400">Vincular Análisis a Cliente</label>
+                        <div class="flex gap-3 mt-1">
+                            <select id="selectClienteIA" class="flex-1 bg-black/50 border border-gray-700 rounded-xl px-4 py-3">
+                                <option>Seleccionar cliente...</option>
+                            </select>
+                            <button onclick="abrirModalHistorialIA()" class="glass px-6 rounded-xl hover:bg-white/10" title="Ver Historial">
+                                <i class="fas fa-history text-orange-500"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="grid md:grid-cols-3 gap-6">
+                        <div class="md:col-span-2 glass rounded-2xl p-6">
+                            <h3 class="font-bold text-xl mb-4">Carga 5 Fotos para Análisis Completo</h3>
+                            <div class="grid grid-cols-5 gap-3 mb-4">
+                                <div class="text-center">
+                                    <div id="ia-preview-frontal" class="aspect-[3/4] bg-black rounded-lg border-2 border-dashed border-gray-700 flex items-center justify-center cursor-pointer hover:border-orange-500" onclick="cargarFotoIA('frontal')">
+                                        <i class="fas fa-plus text-gray-600"></i>
+                                    </div>
+                                    <p class="text-xs mt-1">Frontal</p>
+                                    <button onclick="tomarFotoIA('frontal')" class="text-[10px] text-orange-500 mt-1"><i class="fas fa-camera"></i> Cámara</button>
+                                </div>
+                                <div class="text-center">
+                                    <div id="ia-preview-posterior" class="aspect-[3/4] bg-black rounded-lg border-2 border-dashed border-gray-700 flex items-center justify-center cursor-pointer hover:border-orange-500" onclick="cargarFotoIA('posterior')">
+                                        <i class="fas fa-plus text-gray-600"></i>
+                                    </div>
+                                    <p class="text-xs mt-1">Posterior</p>
+                                    <button onclick="tomarFotoIA('posterior')" class="text-[10px] text-orange-500 mt-1"><i class="fas fa-camera"></i> Cámara</button>
+                                </div>
+                                <div class="text-center">
+                                    <div id="ia-preview-lateral-izq" class="aspect-[3/4] bg-black rounded-lg border-2 border-dashed border-gray-700 flex items-center justify-center cursor-pointer hover:border-orange-500" onclick="cargarFotoIA('lateral-izq')">
+                                        <i class="fas fa-plus text-gray-600"></i>
+                                    </div>
+                                    <p class="text-xs mt-1">Lat. Izq</p>
+                                    <button onclick="tomarFotoIA('lateral-izq')" class="text-[10px] text-orange-500 mt-1"><i class="fas fa-camera"></i> Cámara</button>
+                                </div>
+                                <div class="text-center">
+                                    <div id="ia-preview-lateral-der" class="aspect-[3/4] bg-black rounded-lg border-2 border-dashed border-gray-700 flex items-center justify-center cursor-pointer hover:border-orange-500" onclick="cargarFotoIA('lateral-der')">
+                                        <i class="fas fa-plus text-gray-600"></i>
+                                    </div>
+                                    <p class="text-xs mt-1">Lat. Der</p>
+                                    <button onclick="tomarFotoIA('lateral-der')" class="text-[10px] text-orange-500 mt-1"><i class="fas fa-camera"></i> Cámara</button>
+                                </div>
+                                <div class="text-center">
+                                    <div id="ia-preview-extra" class="aspect-[3/4] bg-black rounded-lg border-2 border-dashed border-purple-500 flex items-center justify-center cursor-pointer hover:border-purple-400" onclick="cargarFotoIA('extra')">
+                                        <i class="fas fa-plus text-purple-500"></i>
+                                    </div>
+                                    <p class="text-xs mt-1 text-purple-400">Extra 45°</p>
+                                    <button onclick="tomarFotoIA('extra')" class="text-[10px] text-purple-400 mt-1"><i class="fas fa-camera"></i> Cámara</button>
+                                </div>
+                            </div>
+                            <div class="flex gap-3">
+                                <button onclick="cargarDesdeScanner()" class="flex-1 glass py-3 rounded-xl text-sm"><i class="fas fa-sync mr-2"></i> Cargar desde Escáner 360°</button>
+                                <button onclick="analizarIAMulti()" class="flex-1 titan-gradient text-black font-bold py-3 rounded-xl pulse"><i class="fas fa-brain mr-2"></i> Analizar 5 Fotos con IA</button>
+                            </div>
+                            <video id="iaVideo" class="hidden w-full mt-4 rounded-xl" autoplay></video>
+                        </div>
+                        <div class="glass rounded-2xl p-6">
+                            <h3 class="font-bold text-xl mb-4">Resultados IA Avanzada</h3>
+                            <div id="iaResultados" class="space-y-3">
+                                <div class="text-center py-8 text-gray-500"><i class="fas fa-layer-group text-4xl mb-3"></i><p class="text-sm">Carga 2-5 fotos para análisis 3D completo</p></div>
+                            </div>
+                            <button id="btnGuardarIA" onclick="guardarHistoricoIA()" class="w-full mt-4 titan-gradient text-black font-bold py-3 rounded-xl hidden shimmer">
+                                <i class="fas fa-save mr-2"></i> Guardar Resultados
+                            </button>
+                        </div>
+                    </div>
+                    <div class="glass rounded-2xl p-6 mt-6">
+                        <h3 class="font-bold mb-4">Análisis Multi-Ángulo</h3>
+                        <div class="grid md:grid-cols-5 gap-3" id="analisisMulti">
+                            <div class="bg-black/50 p-3 rounded-lg text-center"><p class="text-[10px] text-gray-400">VISTA FRONTAL</p><p class="text-sm font-bold mt-1">Simetría 96%</p></div>
+                            <div class="bg-black/50 p-3 rounded-lg text-center"><p class="text-[10px] text-gray-400">VISTA POSTERIOR</p><p class="text-sm font-bold mt-1">Espalda 94%</p></div>
+                            <div class="bg-black/50 p-3 rounded-lg text-center"><p class="text-[10px] text-gray-400">LATERAL IZQ</p><p class="text-sm font-bold mt-1">Postura OK</p></div>
+                            <div class="bg-black/50 p-3 rounded-lg text-center"><p class="text-[10px] text-gray-400">LATERAL DER</p><p class="text-sm font-bold mt-1">Postura OK</p></div>
+                            <div class="bg-purple-500/20 p-3 rounded-lg text-center border border-purple-500"><p class="text-[10px] text-purple-400">ANÁLISIS 3D</p><p class="text-sm font-bold text-purple-400">Completo</p></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="competencias" class="view hidden" data-role-access="coach,owner,admin">
+                <div id="competencias" class="view hidden">
+                    <div class="flex items-center gap-4 mb-6"><button onclick="showView('dashboard')" class="glass p-3 rounded-xl"><i class="fas fa-arrow-left"></i></button><h2 class="text-3xl font-black">Competencias TITAN</h2><span class="titan-gradient text-black px-3 py-1 rounded-full text-sm font-bold">EN VIVO</span></div>
+                    <div class="grid md:grid-cols-3 gap-6 mb-6">
+                        <div class="glass rounded-2xl p-6 border-2 border-yellow-500/50"><div class="flex items-center gap-3 mb-3"><div class="w-12 h-12 bg-yellow-500 rounded-full flex items-center justify-center text-black font-black text-xl">1</div><div><p class="font-bold">Carlos Pérez</p></div></div><p class="text-3xl font-black text-yellow-500">2,450 pts</p></div>
+                        <div class="glass rounded-2xl p-6 border-2 border-gray-400/50"><div class="flex items-center gap-3 mb-3"><div class="w-12 h-12 bg-gray-400 rounded-full flex items-center justify-center text-black font-black text-xl">2</div><div><p class="font-bold">María González</p></div></div><p class="text-3xl font-black text-gray-400">2,180 pts</p></div>
+                        <div class="glass rounded-2xl p-6 border-2 border-orange-700/50"><div class="flex items-center gap-3 mb-3"><div class="w-12 h-12 bg-orange-700 rounded-full flex items-center justify-center text-white font-black text-xl">3</div><div><p class="font-bold">Ana López</p></div></div><p class="text-3xl font-black text-orange-700">1,950 pts</p></div>
+                    </div>
+                </div>
+
+                <div id="wearables" class="view hidden" data-role-access="coach,owner,admin">
+                <div id="wearables" class="view hidden">
+                    <div class="flex items-center gap-4 mb-6"><button onclick="showView('dashboard')" class="glass p-3 rounded-xl"><i class="fas fa-arrow-left"></i></button><h2 class="text-3xl font-black">Wearables Sync</h2></div>
+                    <div class="grid md:grid-cols-3 gap-6 mb-6">
+                        <div class="glass rounded-2xl p-6 text-center"><i class="fab fa-apple text-4xl mb-3"></i><p class="font-bold">Apple Watch</p><p class="text-xs text-green-500 mt-1">● Conectado</p></div>
+                        <div class="glass rounded-2xl p-6 text-center"><i class="fas fa-running text-4xl mb-3 text-blue-500"></i><p class="font-bold">Garmin</p><p class="text-xs text-green-500 mt-1">● Conectado</p></div>
+                        <div class="glass rounded-2xl p-6 text-center opacity-50"><i class="fab fa-google text-4xl mb-3"></i><p class="font-bold">Fitbit</p><p class="text-xs text-gray-500 mt-1">○ Desconectado</p></div>
+                    </div>
+                </div>
+                
+                <div id="predictiva" class="view hidden" data-role-access="owner,admin">
+
+                <div id="predictiva" class="view hidden">
+                    <div class="flex items-center gap-4 mb-6"><button onclick="showView('dashboard')" class="glass p-3 rounded-xl"><i class="fas fa-arrow-left"></i></button><h2 class="text-3xl font-black">IA Predictiva - Retención</h2></div>
+                    <div class="grid md:grid-cols-4 gap-4 mb-6">
+                        <div class="glass rounded-xl p-4 border-l-4 border-red-500"><p class="text-xs text-gray-400">Alto Riesgo</p><p class="text-3xl font-black text-red-500">12</p></div>
+                        <div class="glass rounded-xl p-4 border-l-4 border-yellow-500"><p class="text-xs text-gray-400">Riesgo Medio</p><p class="text-3xl font-black text-yellow-500">23</p></div>
+                        <div class="glass rounded-xl p-4 border-l-4 border-green-500"><p class="text-xs text-gray-400">Bajo Riesgo</p><p class="text-3xl font-black text-green-500">212</p></div>
+                    </div>
+                </div>
+
+                <div id="video-analisis" class="view hidden" data-role-access="coach,owner,admin">
+                <div id="video-analisis" class="view hidden">
+                    <div class="flex items-center gap-4 mb-6">
+                        <button onclick="showView('dashboard')" class="glass p-3 rounded-xl"><i class="fas fa-arrow-left"></i></button>
+                        <h2 class="text-3xl font-black">Video Análisis Técnico <span class="premium-badge">ELITE</span></h2>
+                    </div>
+                    <!-- Contenido de video análisis --> 
+                    <!-- Contenido de video análisis -->
+                </div>
+
+                <div id="marketplace" class="view hidden">
+                    <div class="flex items-center gap-4 mb-6">
+                        <button onclick="showView('dashboard')" class="glass p-3 rounded-xl"><i class="fas fa-arrow-left"></i></button>
+                        <h2 class="text-3xl font-black">Marketplace TITAN <span class="premium-badge">ELITE</span></h2>
+                        <button onclick="abrirEditorProducto()" class="titan-gradient text-black px-4 py-2 rounded-xl font-bold text-sm"><i class="fas fa-plus mr-1"></i> Producto</button>
+                    </div>
+                    <div class="grid md:grid-cols-4 gap-4 mb-6" id="statsMarket">
+                        <!-- Stats dinámicos -->
+                    </div>
+                    <div id="gridProductos" class="grid md:grid-cols-4 gap-4">
+                        <!-- Productos dinámicos -->
+                    </div>
+                </div>
+
+                <div id="franquicias" class="view hidden" data-role-access="owner,admin">
+                <div id="franquicias" class="view hidden">
+                    <!-- Contenido franquicias -->
+                </div>
+
+                <div id="usuarios" class="view hidden" data-role-access="admin">
+                    <div class="flex items-center gap-4 mb-6"><button onclick="showView('dashboard')" class="glass p-3 rounded-xl"><i class="fas fa-arrow-left"></i></button><h2 class="text-3xl font-black">Gestión de Usuarios</h2></div>
+                    <div class="glass rounded-2xl p-6">
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-sm">
+                                <thead>
+                                    <tr class="border-b border-gray-700">
+                                        <th class="p-3 text-left text-gray-400">Nombre</th>
+                                        <th class="p-3 text-left text-gray-400">ID Usuario</th>
+                                        <th class="p-3 text-left text-gray-400">Rol</th>
+                                        <th class="p-3 text-center text-gray-400">Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tablaUsuarios">
+                                    <tr><td colspan="4" class="p-8 text-center text-gray-500">Cargando perfiles...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="reconocimiento" class="view hidden">
+                    <div class="flex items-center gap-4 mb-6">
+                        <button onclick="showView('dashboard')" class="glass p-3 rounded-xl"><i class="fas fa-arrow-left"></i></button>
+                        <h2 class="text-3xl font-black">Face ID Check-In <span class="premium-badge">ELITE</span></h2>
+                    </div>
+                    <div class="grid md:grid-cols-2 gap-6">
+                        <div class="glass-premium rounded-2xl p-6">
+                            <video id="faceVideo" class="w-full h-full object-cover" autoplay muted></video>
+                            <button onclick="iniciarFaceID()" class="w-full titan-gradient text-black font-bold py-3 rounded-xl">Activar Face ID</button>
+                        </div>
+                        <div class="glass-premium rounded-2xl p-6"><h3 class="font-bold text-xl mb-4">Últimos Accesos</h3><div id="faceAccesos" class="space-y-3"></div></div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <div id="configModal" class="fixed inset-0 bg-black/80 z-50 hidden flex items-center justify-center p-4">
+        <div class="glass rounded-2xl p-8 max-w-md w-full">
+            <h3 class="text-2xl font-bold mb-6">Acceso Rápido</h3>
+            <p class="text-gray-400 mb-4">Para configuración completa ve a: Configuración →</p>
+            <div class="space-y-4">
+                <div><label class="text-sm text-gray-400">Nombre Gimnasio</label><input id="configNombre" class="w-full bg-black/50 border border-gray-700 rounded-xl px-4 py-3 mt-1" value="TITAN GYM"></div>
+            </div>
+            <div class="flex gap-3 mt-6">
+                <button onclick="guardarConfig(); showView('configuracion'); closeConfig();" class="flex-1 titan-gradient text-black font-bold py-3 rounded-xl">Ir a Configuración</button>
+                <button onclick="closeConfig()" class="flex-1 glass py-3 rounded-xl">Cerrar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL HISTORIAL IA -->
+    <div id="modalHistorialIA" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="glass rounded-2xl p-8 max-w-2xl w-full max-h-[80vh] overflow-y-auto">
+            <div class="flex justify-between items-center mb-6">
+                <div>
+                    <h3 class="text-2xl font-bold">Historial de Análisis IA</h3>
+                    <p id="nombreClienteHistorial" class="text-orange-500 font-bold"></p>
+                </div>
+                <button onclick="cerrarModalHistorialIA()" class="w-10 h-10 rounded-lg bg-gray-800 hover:bg-gray-700 flex items-center justify-center"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="glass rounded-2xl p-5 mb-6">
+                <canvas id="chartEvolucionIA" height="150"></canvas>
+            </div>
+            <div id="listaHistorialIA" class="space-y-4">
+                <!-- Se llena dinámicamente -->
+            </div>
+            <button onclick="cerrarModalHistorialIA()" class="w-full mt-8 glass py-4 rounded-xl font-bold hover:bg-white/10 transition">Cerrar Historial</button>
+        </div>
+    </div>
+
+    <script src="js/app.js"></script>
+    <script src="js/marketplace.js"></script>
+</body>
+</html>
