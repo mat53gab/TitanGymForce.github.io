@@ -5,7 +5,24 @@ const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 let clientes = [];
 let userRole = null;
+let loginRole = 'owner'; // Rol seleccionado por defecto
 let currentStream = null, currentFotoTipo = '', currentLang = 'es';
+
+/**
+ * Maneja la selección visual del rol en la pantalla de login
+ */
+function selectLoginRole(role) {
+    loginRole = role;
+    document.querySelectorAll('.role-btn').forEach(btn => {
+        btn.classList.remove('bg-orange-500', 'text-black');
+        btn.classList.add('text-gray-400');
+    });
+    const activeBtn = document.getElementById(`btn-role-${role}`);
+    if (activeBtn) {
+        activeBtn.classList.remove('text-gray-400');
+        activeBtn.classList.add('bg-orange-500', 'text-black');
+    }
+}
 
 const translations = {
     es: { dashboard: 'Dashboard', clientes: 'Clientes', suscripciones: 'Suscripciones', dashboard_title: 'DASHBOARD TITAN', nuevo_cliente: 'Nuevo Cliente' },
